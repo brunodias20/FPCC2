@@ -7,9 +7,9 @@ output: pdf_document
 
 Uso das cotas parlamentares
 ---------------------------------------------------------------------------------------------------
-Para esta analise, o objetivo foi encontrar os deputados que ultrapassam suas cotas parlamentares. Existe um limite mensal por deputado que é definido pela Camara dos Deputados. Pude encontrar essa informação no  [site](http://www2.camara.leg.br/comunicacao/assessoria-de-imprensa/cota-parlamentar) da câmara. 
+Para esta análise, o objetivo foi encontrar os deputados que ultrapassam suas cotas parlamentares. Existe um limite mensal por deputado que é definido pela Camara dos Deputados. Pude encontrar essa informação [aqui](http://www2.camara.leg.br/comunicacao/assessoria-de-imprensa/cota-parlamentar).
 
-Primeiro passo foi analisar qual o subconjunto do *data frame* eu vou utilizar. Após ler a [documentação](http://www2.camara.leg.br/transparencia/cota-para-exercicio-da-atividade-parlamentar/explicacoes-sobre-o-formato-dos-arquivos-xml) decidi que para o que quero mostrar, preciso usar as seguintes variáveis: 
+O primeiro passo foi analisar qual o subconjunto do *data frame* que vou utilizar. Após ler a [documentação](http://www2.camara.leg.br/transparencia/cota-para-exercicio-da-atividade-parlamentar/explicacoes-sobre-o-formato-dos-arquivos-xml) decidi que para o que quero mostrar, preciso usar as seguintes variáveis: 
 
 + **txNomeParlamentar**: Nome adotado pelo Parlamentar ao tomar posse do seu mandato.
 + **sgPartido**:  O seu conteúdo representa a sigla de um partido.
@@ -43,19 +43,19 @@ ggplot(gastosDeputadosMensal, aes(x = txNomeParlamentar, y = total)) +
         axis.ticks=element_blank()) 
 ```
 
-Percebi pelo gráfico acima, que grande parte dos gastos mensais estão abaixo dos R$ 30 mil reais, que é o valor da **menor cota** dentre os estados brasileiros, no sumário gerado abaixo podemos visualizar as cotas parlamentares.
+Percebi, pelo gráfico acima, que grande parte dos gastos mensais estão abaixo dos R$ 30 mil reais, que é o valor da **menor cota** dentre os estados brasileiros. No sumário gerado abaixo podemos visualizar as cotas parlamentares.
 
 ```{r echo=FALSE}
 summary(cotasParlamentares$Cota)
 ```
 
-Entretanto, olhando para o sumário das cotas com calma e comparando com o gráfico, notei algo estranho em alguns pontos do gráfico que excedem o limite máximo de cotas dentre os estados. Dedeico a próxima seção para investigar essa situação. 
+Entretanto, olhando para o sumário das cotas com calma e fazendo uma comparação com o gráfico, notei algo estranho em alguns pontos do gráfico que excedem o limite máximo de cotas dentre os estados. Dedico a próxima seção para investigar essa situação. 
 
 ### Deputados da PB que ultrapassaram o limite da cota
 
-Para fazer essa analise, tive que importar o *data frame* do limite de cotas por estado, esse é um dos desafios encontrados desta analise. 
+Para fazer essa análise, tive que importar o *data frame* do limite de cotas por estado. Esse é um dos desafios encontrados nesse trabalho. 
 
-Depois de importar o data frame, fiz um gráfico para analisar se existe algum deputado do nosso estado que estourou a cota mensal. Analisando o gráfico fica claro que 4 dos parlamentares do nosso estado excederam os limites mensais das cotas parlamentares. Isso é um dado preocupante, levando em consideração que os gastos gerais dos deputados já são altos! 
+Depois de importar o data frame, fiz um gráfico para analisar se existe algum deputado do nosso estado que estourou a cota mensal. Analisando o gráfico, fica claro que 4 dos parlamentares do nosso estado excederam os limites mensais das cotas parlamentares. Isso é um dado preocupante, levando em consideração que os gastos gerais dos deputados já são altos! 
 
 
 ```{r echo=FALSE,message=FALSE}
@@ -82,7 +82,7 @@ ggplot(comb.m, aes(x=nome, y=value)) +
 ```
 
 
-O limite da cota do estado da Paraíba é de R$ 41.660,70. No mês de Janeiro, por exemplo, 3 deputados ultrapassaram esse limite. Já que foi possível enxergar esse tipo de problema na nossa realidade loca, tento expandir essa analise pra o restante do país.
+O limite da cota do estado da Paraíba é de R$ 41.660,70. No mês de Janeiro, por exemplo, 3 deputados ultrapassaram esse limite. Já que foi possível enxergar esse tipo de problema na nossa realidade loca, tento expandir essa análise pra o restante do país.
 
 <sub>PS: O mês de abril foi ignorado, pois só existem 3 parlamentares com gasto nesse mês e o gasto é muito abaixo das cotas.</sub>
 
@@ -90,7 +90,7 @@ O limite da cota do estado da Paraíba é de R$ 41.660,70. No mês de Janeiro, p
 
 Para realizar esse levantamento, tive que utilizar a função `merge` do R, que funciona semelhante ao JOIN do SQL. A função abaixo, se comporta de maneira equivalente ao OUTER JOIN feito em Banco de Dados. 
 
-O rank mostra que por 45 vezes em **QUATRO** meses os parlamentares. Vale lembrar que essa amostragem tem pouquissímos dados do mês de abril. O mais alarmante é que alguns deputados excedem o limite em até **DOIS** meses!
+O rank mostra que por 45 vezes em **QUATRO** meses os parlamentares. Vale lembrar que essa amostragem tem pouquissímos dados do mês de abril. O mais alarmante é que alguns deputados excedem o limite em até 2 MESES!
 
 ```{r echo=FALSE}
 gastosDeputadosCotas <- merge(x=gastosDeputadosMensal, y=cotasParlamentares, by ="sgUF", all = TRUE)
@@ -111,14 +111,14 @@ ggplot(deputadosEstourados, aes(x = txNomeParlamentar, y = total)) +
   geom_jitter(data=gastosDeputadosMensal, aes(x = txNomeParlamentar, y = total), alpha = 0.3, color ="blue") 
 ```
 
-Nesse momento comprovo o que tinha achado estranho na analise inicial, os pontos que se dispersam pra cima no nosso gráfico, são os deputados que estouraram as cotas mensais de seus estados. 
+Nesse momento, comprovo o que tinha achado estranho na análise inicial. Os pontos que se dispersam pra cima no nosso gráfico, são os deputados que estouraram as cotas mensais de seus estados. 
 
-Provavelmente se conseguirmos uma amostragem do ano inteiro de 2015, iria encontrar muito mais parlamentares que excederam as cotas mensais. Isso é realmente preocupante no funcionamento do legislativo. 
+Provavelmente, se conseguirmos uma amostragem do ano inteiro de 2015, iria encontrar muito mais parlamentares que excederam as cotas mensais. Isso é realmente preocupante no funcionamento do legislativo. 
 
 ## Perguntas complementares
 Como atividade complementar, preciso fazer um levantamento de **quais as empresas que mais prestaram serviços** para os deputados. 
 
-### Lista de empresas que mais prestaram serviços no periodo 
+### Lista de empresas que mais prestaram serviços no período 
 
 Como pude perceber, dentre as 10 empresas que mais prestaram serviços para os deputados, três são companhias aéreas e três são dos correios. Essa informação ~~sugere~~ que a maior parte dos gastos dos parlamentares foram com viagens e trânsito de encomendas. 
 
@@ -137,7 +137,7 @@ ggplot(empresasTop10, aes(x=txtBeneficiario, y=total)) +
 ```
 
 
-Agora vou rankear as maiores despesas que os parlamentares tem por tipo.  
+Agora vou rankear as maiores despesas que os parlamentares têm por tipo.  
 ``` {r echo=FALSE}
 rankTiposGastos <- dadosParlamentares %>% 
   group_by(txtDescricao) %>% 
@@ -146,7 +146,7 @@ rankTiposGastos <- dadosParlamentares %>%
 rankTiposGastos
 ```
 
-Notei que **DIVULGAÇÃO DA ATIVIDADE PARLAMENTAR** (publicidade) é onde existe mais gastos pelos deputados. Mas não podemos ignorar alguns outros fatores que são um pouco estranhos. Olhando detalhadamente, consegui perceber algo estranho, existe dois tipos de despesas que parecem iguais,  *Emissão Bilhete Aéreo* e *PASSAGENS AÉREAS*, percebendo isso eu reorganizei o data frame para rankear novamente os gastos. Mesmo com essa reorganização o gasto com publicidade é quase o dobro comparado com o gasto com passagens aéreas.
+Notei que **DIVULGAÇÃO DA ATIVIDADE PARLAMENTAR** (publicidade) é onde existe mais gastos pelos deputados. Mas não podemos ignorar alguns outros fatores que são um pouco estranhos. Olhando detalhadamente, consegui perceber algo estranho, existe dois tipos de despesas que parecem iguais,  *Emissão Bilhete Aéreo* e *PASSAGENS AÉREAS*, percebendo isso, reorganizei o data frame para rankear novamente os gastos. Mesmo com essa reorganização o gasto com publicidade é quase o dobro comparado com o gasto com passagens aéreas.
 
 ```{r echo=FALSE}
 a <- rankTiposGastos[[5,2]] + rankTiposGastos[[9,2]]
