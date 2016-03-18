@@ -7,9 +7,9 @@ output: pdf_document
 
 Uso das cotas parlamentares
 ---------------------------------------------------------------------------------------------------
-Para esta analise, o objetivo foi encontrar os deputados que ultrapassam suas cotas parlamentares. Existe um limite mensal por deputado que é definido pela Camara dos Deputados. Pude encontrar essa informação [aqui](http://www2.camara.leg.br/comunicacao/assessoria-de-imprensa/cota-parlamentar)
+Para esta analise, o objetivo foi encontrar os deputados que ultrapassam suas cotas parlamentares. Existe um limite mensal por deputado que é definido pela Camara dos Deputados. Pude encontrar essa informação no  [site](http://www2.camara.leg.br/comunicacao/assessoria-de-imprensa/cota-parlamentar) da câmara. 
 
-Primeiro passo foi analisar qual o subconjunto do *data frame* eu vou utilizar, após ler a [documentação](http://www2.camara.leg.br/transparencia/cota-para-exercicio-da-atividade-parlamentar/explicacoes-sobre-o-formato-dos-arquivos-xml) decidi que para o que quero mostrar, preciso usar as seguintes variáveis: 
+Primeiro passo foi analisar qual o subconjunto do *data frame* eu vou utilizar. Após ler a [documentação](http://www2.camara.leg.br/transparencia/cota-para-exercicio-da-atividade-parlamentar/explicacoes-sobre-o-formato-dos-arquivos-xml) decidi que para o que quero mostrar, preciso usar as seguintes variáveis: 
 
 + **txNomeParlamentar**: Nome adotado pelo Parlamentar ao tomar posse do seu mandato.
 + **sgPartido**:  O seu conteúdo representa a sigla de um partido.
@@ -90,7 +90,7 @@ O limite da cota do estado da Paraíba é de R$ 41.660,70. No mês de Janeiro, p
 
 Para realizar esse levantamento, tive que utilizar a função `merge` do R, que funciona semelhante ao JOIN do SQL. A função abaixo, se comporta de maneira equivalente ao OUTER JOIN feito em Banco de Dados. 
 
-O rank mostra que por 45 vezes em **QUATRO** meses os parlamentares. Vale lembrar que essa amostragem tem pouquissímos dados do mês de abril. O mais alarmante é que alguns deputados excedem o limite em até 2 MESES!
+O rank mostra que por 45 vezes em **QUATRO** meses os parlamentares. Vale lembrar que essa amostragem tem pouquissímos dados do mês de abril. O mais alarmante é que alguns deputados excedem o limite em até **DOIS** meses!
 
 ```{r echo=FALSE}
 gastosDeputadosCotas <- merge(x=gastosDeputadosMensal, y=cotasParlamentares, by ="sgUF", all = TRUE)
