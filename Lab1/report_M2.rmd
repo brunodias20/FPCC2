@@ -29,10 +29,10 @@ library("ggplot2")
 ```
 
 ```{r}
-gastosDeputadosMensal <- dadosParlamentares %>% group_by(txNomeParlamentar, sgUF, numMes) %>% summarise(total=sum(vlrLiquido)) %>% arrange(desc(total)) %>% filter(sgUF=="PB", numMes==1)
-gastosDeputadosMensal <- dadosParlamentares %>% group_by(txNomeParlamentar, sgUF, numMes) %>% summarise(total=sum(vlrLiquido)) %>% arrange(desc(total)) %>% filter(sgUF=="PB", numMes==2)
-gastosDeputadosMensal <- dadosParlamentares %>% group_by(txNomeParlamentar, sgUF, numMes) %>% summarise(total=sum(vlrLiquido)) %>% arrange(desc(total)) %>% filter(sgUF=="PB", numMes==3)
-gastosDeputadosMensal <- dadosParlamentares %>% group_by(txNomeParlamentar, sgUF, numMes) %>% summarise(total=sum(vlrLiquido)) %>% arrange(desc(total)) %>% filter(sgUF=="PB", numMes==4)
+gastosDeputadosJan <- dadosParlamentares %>% group_by(txNomeParlamentar, sgUF, numMes) %>% summarise(total=sum(vlrLiquido)) %>% arrange(desc(total)) %>% filter(sgUF=="PB", numMes==1)
+gastosDeputadosFev <- dadosParlamentares %>% group_by(txNomeParlamentar, sgUF, numMes) %>% summarise(total=sum(vlrLiquido)) %>% arrange(desc(total)) %>% filter(sgUF=="PB", numMes==2)
+gastosDeputadosMar <- dadosParlamentares %>% group_by(txNomeParlamentar, sgUF, numMes) %>% summarise(total=sum(vlrLiquido)) %>% arrange(desc(total)) %>% filter(sgUF=="PB", numMes==3)
+gastosDeputadosAbr <- dadosParlamentares %>% group_by(txNomeParlamentar, sgUF, numMes) %>% summarise(total=sum(vlrLiquido)) %>% arrange(desc(total)) %>% filter(sgUF=="PB", numMes==4)
 
 
 ggplot(gastosDeputadosMensal, aes(x = (txNomeParlamentar), y = total)) + 
