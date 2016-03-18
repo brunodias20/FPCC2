@@ -1,0 +1,72 @@
+---
+title: "Lab1 - Milestone 2"
+author: "Bruno Dias"
+email: "contato@diasbruno.com"
+date: "March 17, 2016"
+output: html_document
+---
+
+
+Uso das cotas parlamentares
+---------------------------------------------------------------------------------------------------
+Para esta analise, o objetivo foi encontrar os deputados que ultrapassam suas cotas parlamentares. Existe um limite mensal por deputado que é definido pela Camara dos Deputados. Podemos encontrar essa informação [aqui](http://www2.camara.leg.br/comunicacao/assessoria-de-imprensa/cota-parlamentar)
+
+Primeiro passo foi analisar qual o subconjunto do *data frame* eu vou utilizar, após ler a [documentação]() decidi que será preciso usar as seguintes
+
+```{r echo=TRUE, message=FALSE}
+library("dplyr")
+library("ggplot2")
+```
+
+
+Qual foi o gasto mensal por deputado? 
+
+gastosDeputados <- AnoAtual %>% select(txNomeParlamentar, sgUF, sgPartido, txtBeneficiario, txtDescricao, vlrDocumento, vlrLiquido, numMes)
+
+gastosDeputadosMensal <- gastosDeputados %>% group_by(txNomeParlamentar, sgUF, numMes) %>% summarise(total=sum(vlrLiquido)) %>% arrange(desc(total))
+
+Quais os deputados que ultrapassaram a cota parlamentar mensal? 
+Dado para gerar o dataset de cotas se encontra aqui: http://www2.camara.leg.br/comunicacao/assessoria-de-imprensa/cota-parlamentar
+
+gastosDeputadosCotas <- merge(x=gastosDeputadosMensal, y=cotasParlamentares, by ="sgUF", all = TRUE)
+deputadosEstourados <- gastosDeputadosCotas %>% filter(total > Cota) %>% arrange(desc(total))
+
+Primeiro para aprendizagem do R, procurei fazer um levantamento de **quais as empresas que mais prestaram serviços** para os deputados. 
+
+```{r}
+dadosParlamentares <- read.csv("/Users/bruno/Documents/Mestrado/fpcc2/lab1/AnoAtual.csv")
+
+empresasTop10 <- dadosParlamentares %>% 
+  group_by(txtBeneficiario) %>% 
+  summarise(total=n()) %>% 
+  arrange(desc(total)) %>% 
+  slice(c(1:10))
+
+ggplot(empresasTop10, aes(x=txtBeneficiario, y=total)) + 
+  geom_bar( size=.2, stat="identity", width = 0.5) + 
+  xlab("Qtd de Serviços prestados") + 
+  ylab("Empresas") + 
+  coord_flip()
+```
+
+Como podemos perceber, dentre as 10 empresas que mais prestaram serviços para os deputados, três são companhias aéreas e três são dos correios. Essa informação sugere que a maior parte dos gastos dos parlamentares foram com viagens e trânsito de encomendas. 
+
+Agora vamos rankear as maiores despesas que os parlamentares tem por tipo.  
+``` {r}
+rankTiposGastos <- dadosParlamentares %>% 
+  group_by(txtDescricao) %>% 
+  summarise(total=sum(vlrDocumento)) %>% 
+  arrange(desc(total))
+rankTiposGastos
+```
+
+Podemos perceber que divulgação de atividade parlamentar (publicidade) é onde as cotas são mais usadas. Mas não podemos ignorar alguns outros fatores. Olhando detalhadamente, consegui perceber algo estranho, existe dois tipos de despesas que parecem iguais,  *Emissão Bilhete Aéreo* e *PASSAGENS AÉREAS*, percebendo isso eu reorganizei o data frame para rankear novamente os gastos. 
+
+```{r}
+a <- rankTiposGastos[[5,2]] + rankTiposGastos[[9,2]]
+rankTiposGastos[[5,2]] <- a
+rankTiposGastos <- rankTiposGastos[-c(9), ]
+rankTiposGastos
+```
+
+
