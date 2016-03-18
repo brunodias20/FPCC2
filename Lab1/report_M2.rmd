@@ -11,19 +11,41 @@ Uso das cotas parlamentares
 ---------------------------------------------------------------------------------------------------
 Para esta analise, o objetivo foi encontrar os deputados que ultrapassam suas cotas parlamentares. Existe um limite mensal por deputado que é definido pela Camara dos Deputados. Podemos encontrar essa informação [aqui](http://www2.camara.leg.br/comunicacao/assessoria-de-imprensa/cota-parlamentar)
 
-Primeiro passo foi analisar qual o subconjunto do *data frame* eu vou utilizar, após ler a [documentação]() decidi que será preciso usar as seguintes
+Primeiro passo foi analisar qual o subconjunto do *data frame* eu vou utilizar, após ler a [documentação](http://www2.camara.leg.br/transparencia/cota-para-exercicio-da-atividade-parlamentar/explicacoes-sobre-o-formato-dos-arquivos-xml) decidi que para o que quero mostrar, preciso usar as seguintes variáveis: 
+
++ **txNomeParlamentar**: Nome adotado pelo Parlamentar ao tomar posse do seu mandato.
++ **sgPartido**:  O seu conteúdo representa a sigla de um partido.
++ **sgUF**: No contexto da cota CEAP, representa a unidade da federação pela qual o deputado foi eleito e é utilizada para definir o valor da cota a que o deputado tem.
++ **txtDescricao**: O seu conteúdo é a descrição do Tipo de Despesa relativo à despesa em questão.
++ **vlrDocumento**:  O seu conteúdo é o valor de face do documento fiscal ou o valor do documento que deu causa à despesa
++ **vlrLiquido**: O seu conteúdo representa o valor líquido do documento fiscal ou do documento que deu causa à despesa e será calculado pela diferença entre o Valor do Documento e o Valor da Glosa.
++ **numMes**:  O seu conteúdo representa o Mês da competência financeira do documento fiscal ou do documento que deu causa à despesa. 
+
+Em seguida, iremos analisar o **gasto mensal** de cada parlamentar, ordenando por mês. 
 
 ```{r echo=TRUE, message=FALSE}
 library("dplyr")
 library("ggplot2")
 ```
 
+```{r}
+gastosDeputadosMensal <- dadosParlamentares %>% group_by(txNomeParlamentar, sgUF, numMes) %>% summarise(total=sum(vlrLiquido)) %>% arrange(desc(total)) %>% filter(sgUF=="PB", numMes==1)
+gastosDeputadosMensal <- dadosParlamentares %>% group_by(txNomeParlamentar, sgUF, numMes) %>% summarise(total=sum(vlrLiquido)) %>% arrange(desc(total)) %>% filter(sgUF=="PB", numMes==2)
+gastosDeputadosMensal <- dadosParlamentares %>% group_by(txNomeParlamentar, sgUF, numMes) %>% summarise(total=sum(vlrLiquido)) %>% arrange(desc(total)) %>% filter(sgUF=="PB", numMes==3)
+gastosDeputadosMensal <- dadosParlamentares %>% group_by(txNomeParlamentar, sgUF, numMes) %>% summarise(total=sum(vlrLiquido)) %>% arrange(desc(total)) %>% filter(sgUF=="PB", numMes==4)
 
-Qual foi o gasto mensal por deputado? 
 
-gastosDeputados <- AnoAtual %>% select(txNomeParlamentar, sgUF, sgPartido, txtBeneficiario, txtDescricao, vlrDocumento, vlrLiquido, numMes)
-
-gastosDeputadosMensal <- gastosDeputados %>% group_by(txNomeParlamentar, sgUF, numMes) %>% summarise(total=sum(vlrLiquido)) %>% arrange(desc(total))
+ggplot(gastosDeputadosMensal, aes(x = (txNomeParlamentar), y = total)) + 
+  geom_bar(size=.2, stat="identity", width = 0.5) + 
+  geom_hline(yintercept = 41660.7) +
+  coord_flip()
+# geom_point(alpha = 0.2) +
+# xlab("Parlamentares") +
+# ylab("Gasto Mensal - Jan/2015") + 
+# theme_get() + 
+# theme(axis.text.x=element_blank(),
+#        axis.ticks=element_blank()) 
+```
 
 Quais os deputados que ultrapassaram a cota parlamentar mensal? 
 Dado para gerar o dataset de cotas se encontra aqui: http://www2.camara.leg.br/comunicacao/assessoria-de-imprensa/cota-parlamentar
@@ -43,7 +65,7 @@ empresasTop10 <- dadosParlamentares %>%
   slice(c(1:10))
 
 ggplot(empresasTop10, aes(x=txtBeneficiario, y=total)) + 
-  geom_bar( size=.2, stat="identity", width = 0.5) + 
+  geom_bar(size=.2, stat="identity", width = 0.5) + 
   xlab("Qtd de Serviços prestados") + 
   ylab("Empresas") + 
   coord_flip()
