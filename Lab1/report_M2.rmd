@@ -1,11 +1,9 @@
 ---
 title: "Lab1 - Milestone 2"
-author: "Bruno Dias"
-email: "contato@diasbruno.com"
+author: "Bruno Dias - contato@diasbruno.com"
 date: "March 17, 2016"
-output: html_document
+output: pdf_document
 ---
-
 
 Uso das cotas parlamentares
 ---------------------------------------------------------------------------------------------------
@@ -29,8 +27,8 @@ Irei plotar um gráfico para fazer uma observação geral sobre o **gasto mensal
 library("dplyr")
 library("ggplot2")
 library("reshape2")
-dadosParlamentares <- read.csv("/Users/brunodias/Documents/fpcc2/lab1/dadosParlamentares.csv")
-cotasParlamentares <- read.csv("/Users/brunodias/Documents/fpcc2/lab1/cotasParlamentares.csv")
+dadosParlamentares <- read.csv("/Users/bruno/Documents/Mestrado/fpcc2/lab1/dadosParlamentares.csv")
+cotasParlamentares <- read.csv("/Users/bruno/Documents/Mestrado/fpcc2/lab1/cotasParlamentares.csv")
 ```
 
 ```{r echo=FALSE}
