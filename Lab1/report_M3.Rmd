@@ -1,0 +1,41 @@
+---
+title: "Lab 1 - Milestone 3"
+author: "Bruno Dias - contato@diasbruno.com"
+date: "March 21, 2016"
+output: html_document
+---
+
+## Você, pra valer 
+
+
+1. **Que linguagens que tiveram um crescimento e um declinio de eventos nesse periodo?**
+
+Deve existir linguagens que foram lançadas no periodo e tiveram um crescimento rápido e, em seguida, um declinio.
+
+2. **Que linguagens tiveram maior crescimento de eventos no periodo? **
+
+Linguagens que são muito utilizadas em aplicações web certamente tiveram um crescimento no periodo. 
+
+3. **Existe correlação entre a quantidade de forkevents e watchevents? Se sim, é baixa ou não?**
+
+Deve existir uma correlação alta. 
+
+4. **Existe correlação entre a quantidade de issues e a quantidade de pushes? **
+
+Sim. 
+
+5. **Qual é a proporção de issues por repositório?**
+
+Talvez não exista um padrão. 
+
+6. **Entre as 10 linguagens mais ativas, existe(m) alguma(s) com mais issues que outras, de forma proporcional? **
+
+Sim.
+
+7. **Quais os trimestres mais produtivos (maior quantidade de eventos) por linguagem(Analisar as 20 linguagens mais ativas) no periodo?**
+
+Acredito que o 2 e o 3 trimestre são mais produtivos que o 1 e o 4. 
+
+8. **Existe um aumento geral de eventos (todos os tipos de eventos e todos os tipos de linguagens) em um determinado trimestre no periodo?**
+
+Não. 
