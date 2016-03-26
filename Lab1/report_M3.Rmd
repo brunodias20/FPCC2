@@ -12,7 +12,7 @@ output: html_document
 
 Deve existir linguagens que foram lançadas no periodo e tiveram um crescimento rápido e, em seguida, um declinio.
 
-2. **Que linguagens tiveram maior crescimento de eventos no periodo? **
+2. **Que linguagens tiveram maior crescimento de eventos no periodo?**
 
 Linguagens que são muito utilizadas em aplicações web certamente tiveram um crescimento no periodo. 
 
@@ -20,7 +20,7 @@ Linguagens que são muito utilizadas em aplicações web certamente tiveram um c
 
 Deve existir uma correlação alta. 
 
-4. **Existe correlação entre a quantidade de issues e a quantidade de pushes? **
+4. **Existe correlação entre a quantidade de issues e a quantidade de pushes?**
 
 Sim. 
 
@@ -28,7 +28,7 @@ Sim.
 
 Talvez não exista um padrão. 
 
-6. **Entre as 10 linguagens mais ativas, existe(m) alguma(s) com mais issues que outras, de forma proporcional? **
+6. **Entre as 10 linguagens mais ativas, existe(m) alguma(s) com mais issues que outras, de forma proporcional?**
 
 Sim.
 
