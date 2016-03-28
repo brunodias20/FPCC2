@@ -2,7 +2,7 @@
 title: "Lab1 - Milestone 4"
 author: "Bruno Dias - contato@diasbruno.com"
 date: "27 de março de 2016"
-output: html_document
+output: pdf_document
 ---
 
 Esse relatório tem como objetivo analisar os dados do *github* dos anos de 2012-2015. Os pontos abordados serão quanto a produtividade dos usuários do *github*, além de entender como se comportaram as linguagens em termo de crescimento e declínio durante o período. 
@@ -22,7 +22,7 @@ As perguntas que foram feitas são as seguintes:
 #### Dados analisados 
 
 ```{r echo=FALSE}
-githubDF <- read.csv("/Users/brunodias/Documents/fpcc2/Lab1/githubDF.csv")
+githubDF <- read.csv("/Users/bruno/Documents/Mestrado/fpcc2/Lab1/githubDF.csv")
 ```
 Para a análise dos dados foi utilizado o data frame disponibilizado que tem seis variáveis, sendo elas:
 
@@ -66,7 +66,8 @@ linguagensAtivas <- usoLinguagensAno %>%
   count(repository_language) %>% 
   filter(n >= 3 )
 
-# Reorganizando o dataset inicial para retirar as linguagens que não tiveram atividade no periodo
+# Reorganizando o dataset inicial para retirar as linguagens que não tiveram atividade 
+# no período
 linguagensUsadas <- 
   merge(x=usoLinguagensAno, y=linguagensAtivas, by="repository_language", all=TRUE) %>%
   na.omit(linguagensUsadas) %>% select(-n)
@@ -86,7 +87,8 @@ linguagensResult %>% select(repository_language)
 Em seguida, iremos exibir o gráfico de produtividade no período analisado. 
 ```{r fig.align="center", echo=FALSE}
 # Criando um df para plotar o gráfico com a produtividade das 4 linguagens no periodo
-result <- merge(linguagensUsadas, linguagensResult, by = "repository_language", all.x= TRUE) %>%
+result <- 
+  merge(linguagensUsadas, linguagensResult, by = "repository_language", all.x= TRUE) %>%
   na.omit(result)
 
 result <- data.frame(Language=result$repository_language, year=result$year.x, qtd_events=result$qtd_events.x)
@@ -110,9 +112,11 @@ linguagensResult <-linguagensUsadas %>%
   distinct(repository_language) %>% 
   filter(year == "2012")
 
-result <- merge(linguagensUsadas, linguagensResult, by = "repository_language", all.x= TRUE) %>%
+result <- 
+  merge(linguagensUsadas, linguagensResult, by = "repository_language", all.x= TRUE) %>%
   na.omit(result)
-result <- data.frame(Language=result$repository_language, year=result$year.x, qtd_events=result$qtd_events.x)
+result <- data.frame(Language=result$repository_language, year=result$year.x,
+                     qtd_events=result$qtd_events.x)
 
 ggplot(result, aes(x=year, y=qtd_events/1000, label=Language)) +
   xlab("Ano") + ylab("qtd de eventos(milhares)") +
@@ -142,7 +146,8 @@ linguagensAtivasTri <- usoLinguagensTri %>%
   count(repository_language) %>% 
   filter(n >= 12)
 
-# Reorganizando o dataset inicial para retirar as linguagens que não tiveram atividade no periodo
+# Reorganizando o dataset inicial para retirar as linguagens que não tiveram atividade
+# no período
 linguagensUsadasTri <- 
   merge(x=usoLinguagensTri, y=linguagensAtivasTri, by="repository_language", all=TRUE) %>%
   na.omit(linguagensUsadas) %>% select(-n)
@@ -160,7 +165,8 @@ Agora, temos os dados necessários para visualizarmos quais foram os trimestres 
 ggplot(trimestresMaisProdutivos, aes(x=repository_language, y=quarter)) + 
   xlab("Linguagens") + ylab("Trimestres") +
   geom_jitter(height=0.25, alpha=0.6, aes(color=as.character(year))) + 
-  scale_color_manual(name="Anos", labels=c("2012","2013","2014"), values=c("red","blue","green"))+
+  scale_color_manual(name="Anos", labels=c("2012","2013","2014"),
+                     values=c("red","blue","green"))+
   theme_bw() +
   theme(axis.text.x=element_blank(),
         axis.ticks=element_blank()) 
@@ -198,7 +204,9 @@ Por outro lado, curiosamente, o terceiro trimestre foi o segundo que teve mais e
 ggplot(EventosTotaisTri, aes(reorder(quarter, events), y=events/1e+6)) +
   xlab("Trimestre") + 
   ylab("Eventos(em milhões)") + 
-  geom_bar(size=.2, stat="identity", alpha=0.8, width = 0.5, fill=EventosTotaisTri$quarter) + 
+  geom_bar(size=.2, stat="identity", 
+           alpha=0.8, width = 0.5, 
+           fill=EventosTotaisTri$quarter) + 
   theme_bw()
 ```
 
@@ -222,9 +230,11 @@ linguagensAtivasTri <- EventosPorTrimestre %>%
   count(repository_language) %>% 
   filter(n >= 24)
 
-# Reorganizando o dataset inicial para retirar as linguagens que não tiveram atividade no periodo
+# Reorganizando o dataset inicial para retirar as linguagens que não tiveram atividade
+# no periodo
 linguagensUsadasTri <- 
-  merge(x=EventosPorTrimestre, y=linguagensAtivasTri, by="repository_language", all=TRUE) %>%
+  merge(x=EventosPorTrimestre, y=linguagensAtivasTri, 
+        by="repository_language", all=TRUE) %>%
   na.omit(linguagensUsadas) %>% select(-n)
 
 # Agrupando os tipos de eventos por repositorio e normalizando
@@ -238,10 +248,11 @@ Por fim, faremos o cálculo da correlação entre os dois tipos de eventos por l
 ``` {r echo=F, comment=NA}
 # Cálculo da correlação entre os eventos do tipo Fork e Watch
 cor(filter(Qtd_eventosTrimestre, type=="ForkEvent")$events, 
-    filter(Qtd_eventosTrimestre, type=="WatchEvent")$events, method = ("pearson"))
+    filter(Qtd_eventosTrimestre, type=="WatchEvent")$events, 
+    method = ("pearson"))
 ```
 
 Essa correlação não nos mostra uma associação de causa e efeito entre os eventos analisados, porém mais uma vez confirma que ao longo dos anos o *Github* vem crescendo e existe uma relação de crescimento dentro os eventos. Em um trabalho futuro, seria interessante correlacionar os outros eventos para tentarmos entender como se comporta a comunidade de usuários do 
 *Github*
 
-Esse relatório pode ser visualizado no próprio [*Github*](https://github.com/brunodias20/FPCC2/blob/master/Lab1/report_M4.rmd) e no [rPubs](http://rpubs.com/brunodias/L1M4)
+Esse relatório pode ser visualizado no próprio [**_Github_**](https://github.com/brunodias20/FPCC2/blob/master/Lab1/report_M4.rmd) e no [**_rPubs_**](http://rpubs.com/brunodias/L1M4)
