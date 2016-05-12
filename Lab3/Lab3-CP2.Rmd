@@ -1,0 +1,23 @@
+---
+title: "Lab3 - Checkpoint 2"
+author: "Bruno Dias - contato@diasbruno.com"
+date: "12 de maio de 2016"
+output: html_document
+---
+
+```{r echo=FALSE}
+
+library("dplyr")
+library("reshape")
+
+filmes <- read.csv("/Users/brunodias/Documents/fpcc2/Lab3/dataset/movies_expanded.csv")
+ratings <- read.csv("/Users/brunodias/Documents/fpcc2/Lab3/dataset/ratings.csv")
+
+filmes.df <- merge(filmes, ratings, by = "movieId", all.x= TRUE) %>%
+  na.omit(result)
+
+
+
+```
+
+
