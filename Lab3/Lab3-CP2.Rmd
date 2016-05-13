@@ -5,14 +5,15 @@ date: "12 de maio de 2016"
 output: html_document
 ---
 
-```{r echo=FALSE}
+```{r echo=FALSE, message = FALSE, warning=FALSE}
 
 library("dplyr")
-library("reshape")
+library("ggplot2")
+library("resample")
+
 
 filmes <- read.csv("/Users/brunodias/Documents/fpcc2/Lab3/dataset/movies_expanded.csv")
 ratings <- read.csv("/Users/brunodias/Documents/fpcc2/Lab3/dataset/ratings.csv")
-
 filmes.me <- merge(filmes, ratings, by = "movieId", all.x= TRUE) %>%
   na.omit(result)
 
@@ -20,4 +21,123 @@ filmes.df <- filmes.me %>% select(movieId, title, numGenres, rating)
 
 ```
 
+## Análise exploratória
 
+O *dataset* tem uma quantidade de avaliações por filme muito baixa como podemos ver no gráfico abaixo:
+
+```{r echo = FALSE}
+count_ratings <- filmes.df %>% group_by(movieId ,title) %>% summarise(qtd_rating = length(rating))
+ggplot(count_ratings, aes(title, qtd_rating)) + 
+  geom_jitter() +
+  xlab("Filmes") +
+  ylab("Qtd Ratings") + 
+  scale_y_continuous(breaks=c(seq(0,300,50))) + 
+  theme_get() + 
+  theme(axis.text.x=element_blank(),
+       axis.ticks=element_blank())
+```
+
+Percebendo isso, foi gerado um sumário para entender melhor a distribuição dos dados. 
+
+``` {r echo = FALSE}
+summary(count_ratings$qtd_rating)
+```
+
+Podemos perceber que existe uma concentração muito alta de filmes com **oito** avaliações ou menos. Iremos trabalhar com a 99% dos filmes, eles tem 114 avaliações ou menos. Os filmes com mais que essa quantidade, consideramos como *outliers*. 
+
+A preocupação foi retirar os *outliers* do gênero, para que eles não impactem na avaliação da relação entre a quantidade de gêneros e a avaliação que um filme tem. 
+
+Com a retirada dos filmes que tem mais de 114 avaliações, Nosso *dataset* resultante tem agora cerca de 44 mil observações contra as 53 mil avaliações iniciais. 
+
+```{r echo=FALSE}
+count_ratings.s <- count_ratings %>% filter(qtd_rating <= 114)
+filmes.result <- merge(filmes.df, count_ratings.s, by = "movieId", all.x= TRUE) %>%
+  na.omit(filmes.result)
+filmes.result <- filmes.result %>% select(-title.y, -qtd_rating)
+ggplot(count_ratings.s, aes(title, qtd_rating)) + 
+  geom_jitter() +
+  xlab("Filmes") +
+  ylab("Qtd Ratings") + 
+  scale_y_continuous(breaks=c(seq(0,300,50))) + 
+  theme_get() + 
+  theme(axis.text.x=element_blank(),
+       axis.ticks=element_blank())
+```
+
+Abaixo é possível ver a média de avaliação por quantidade de generos dos filmes. Percebemos algo estranho que é o resultado inteiro nos filmes com oito generos, ao verificar o *dataset*, percebe-se que só há um filme com 8 generos e esse teve apenas uma avaliação. Também há poucas avaliações para filmes com 6 e 7 generos. Logo, foram descartados os filmes com 6 generos ou mais por não terem pelo menos 300 avaliações. 
+
+```{r echo = FALSE}
+filmes.result %>% group_by(numGenres) %>% summarise(mean(rating), length(rating))
+filmes.result <- filmes.result %>% filter(numGenres < 6)
+```
+
+
+## Relação (Primeira pergunta)
+
+Normalmente os filmes têm vários gêneros. Existe uma relação em quantos gêneros os filmes se encaixam e a avaliação média que os filmes recebem? Mais especificamente: se consideramos a média dos filmes com 1, 2, 3 ... gêneros, existe alguma quantidade de gêneros num mesmo filme que em média recebe avaliações melhores? Caso exista, estime a diferença nas médias entre essa combinação e filmes com apenas um gênero.
+
+
+
+
+```{r}
+filmes.result %>% group_by(title.x, numGenres) %>%  summarise(length(rating)) %>% count(numGenres)
+
+
+filmes.result %>% ggplot(aes(numGenres)) + geom_histogram(binwidth = 0.5)
+resampleGenres = function(n) {
+  x <- filmes.result %>% filter(numGenres == n)
+  b = bootstrap(x$rating, mean, R = 1000)
+}
+
+for (n in 1:5) { 
+  print(CI.percentile(resampleGenres(n), probs = c(.025, .975)))
+}
+```
+
+
+# Segunda Questões
+
+
+```{r} 
+qtd=colSums(filmes.me[4:22])
+sort(qtd)
+
+filmes.var <- filmes.me %>% select(movieId, title, Action, Drama, Comedy, Thriller, Adventure, Romance, SciFi, Crime, Fantasy, Mystery, rating) 
+
+resampleVar = function(n) {
+  x <- filmes.var %>% filter(filmes.var[[]] == 1)
+  b = bootstrap(x$rating, var)
+  CI.percentile(b, probs = c(.025, .975))
+}
+
+# Gerando o dataframe com o intervalo de confiança das varianças dos 10 generos.
+boot_plot <- data.frame(genero = c(), upper = c(), mean = c(), lower = c())
+for (n in 3:12) {
+  a <- resampleVar(n)
+  str(a)
+  boot_plot <- rbind(boot_plot, data.frame( genero = names(filmes.var[n]),
+    mean = mean(a),
+    lower = a[1],
+    upper = a[2]
+  ))
+}
+
+# Plotando a visualização dos 10 generos com maior variância de avaliações. 
+boot_plot <- arrange(boot_plot, desc(mean))
+boot_plot %>% ggplot(aes(x = 1:nrow(boot_plot), y = mean)) +
+  geom_point(size = 2, color = "cyan3") + 
+  geom_errorbar(aes(
+    ymin = lower, 
+    ymax = upper), width=.3, size=1, color = "cyan3") +
+ #geom_hline(aes(yintercept=mean(mean(medianRating)), color="coral", linetype="dashed"))
+  xlab("Gêneros") +
+  ylab("Variância das Avaliações") +
+  scale_x_discrete(limits = c("SciFi", "Comedy", 
+                              "Fantasy", "Action",
+                              "Adventure", "Thriller", 
+                              "Romance", "Crime", 
+                              "Mystery", "Drama")) + 
+  theme_bw() +
+  theme(axis.ticks=element_blank())
+
+```
