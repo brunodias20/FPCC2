@@ -1,0 +1,120 @@
+---
+title: "Revisitando a análise das Cotas Parlamentares"
+author: "Bruno Dias - contato@diasbruno.com"
+date: "April 12, 2016"
+output: pdf_document
+documentclass: article
+classoption: twocolumn
+---
+```{r echo=FALSE, message=FALSE}
+library("dplyr")
+library("ggplot2")
+library("reshape2")
+dadosParlamentares <- read.csv("/Users/bruno/Documents/Mestrado/fpcc2/lab1/dadosParlamentares.csv")
+cotasParlamentares <- read.csv("/Users/bruno/Documents/Mestrado/fpcc2/lab1/cotasParlamentares.csv")
+```
+## Problema
+
+Nesta atividade o propósito é melhorar uma visualização feita em algum problema resolvido de atividades anteriores. Para solução do problema, será necessário: 
+
+  * Uma visualização que tenha ao menos **três** variáveis;
+  * Siga boas práticas de visualização discutidas;
+  * Tenha valores plenamente legíveis; 
+  * Esteja dentro de um documento PDF que tem formato do texto em **duas** colunas;
+  * A figura deve ter a largura de uma coluna e deve ser facilmente legível com zoom de 100%;
+  * Deve mostrar a imagem anterior e a nova imagem, um texto que explica qual a tarefa que a visualização pretende apoiar e uma breve explicação do que foi modificado. 
+
+## Análise inicial 
+
+Na análise inicial foi feito uma visualização que mostra os deputados do estado da Paraíba que ultrapassaram o limite da cota parlamentar definida para o estado. Podemos ver a visualização na figura abaixo. 
+```{r echo=FALSE,message=FALSE}
+g1 <- dadosParlamentares %>% group_by(txNomeParlamentar, sgUF, numMes) %>% summarise(total=sum(vlrLiquido)) %>% arrange(desc(total)) %>% filter(numMes==1, sgUF=="PB")
+
+g2 <- dadosParlamentares %>% group_by(txNomeParlamentar, sgUF, numMes) %>% summarise(total=sum(vlrLiquido)) %>% arrange(desc(total)) %>% filter(numMes==2, sgUF=="PB")
+
+g3 <- dadosParlamentares %>% group_by(txNomeParlamentar, sgUF, numMes) %>% summarise(total=sum(vlrLiquido)) %>% arrange(desc(total)) %>% filter(numMes==3, sgUF=="PB")
+
+comb <- data.frame(nome=g1$txNomeParlamentar, jan=g1$total, feb=g2$total, mar=g3$total)
+comb.m <- melt(comb)
+colnames(comb.m) <- c("nome", "Mês", "value")
+limite <- 41660.7
+```
+
+```{r}
+ggplot(comb.m, aes(x=nome, y=value)) +
+  xlab("Parlamentares") + 
+  ylab("Gastos Mensais") + 
+  geom_bar(aes(fill=Mês), 
+          position = "dodge", 
+          stat="identity") + 
+  coord_flip() +
+  geom_hline(yintercept = limite)
+```
+
+## Visualização melhorada 
+
+Na figura abaixo, temos a visualização da mesma análise com alguns ajustes importantes. A ideia foi melhorar a organização dos dados dessa visualização, ordenando os gastos totais de cada deputado no período. 
+Assim, podemos perceber algo interessante que não tinha sido possível no análise anterior, o deputado **Damião Feliciano** teve o maior gasto no período, mesmo sem estourar sua cota parlamentar. 
+
+```{r}
+ggplot(comb.m, 
+       aes(x=reorder(nome, -value), 
+          y=value, fill=Mês)) +
+  geom_bar(position = "dodge",
+          stat="identity") + 
+  geom_hline(yintercept = limite) +
+  geom_text(
+    aes(0, limite, label = "Limite da Cota"),
+            vjust = -1, hjust = -3.5,
+            angle = 90, size = 3) +
+  xlab("Parlamentares") + 
+  scale_y_continuous(
+    name ="Gastos Mensais (R$)", 
+    breaks=seq(0, 60000, 10000))+ 
+  scale_fill_manual(
+    values = alpha(
+      c("#5a7cea","#b370bf", "#F0E442"))) +
+  coord_flip() + 
+  theme_bw() + 
+  theme(axis.text.x = 
+          element_text(size = rel(0.9)),
+        axis.text.y = 
+          element_text(size = rel(0.75)),
+        panel.grid.major.y = element_blank())
+```
+
+Por fim, outros pontos foram melhorados, tais como: 
+
+  * Adição de uma legenda na linha vertical que define o limite de cota mensal 
+  * Diminuição do tamanho da fonte dos nomes dos deputados, tendo a preocupação de deixar um tamanho bom o suficiente para leitura
+  * Adição da unidade monetária(R$) para facilitar o entendimento do eixo X
+  * Aumento da escala de valores no eixo X para facilitar a leitura do gráfico
+  * Mudança nas cores das barras com o objetivo de deixar o gráfico mais acessível para daltônicos.
+  * Mudança no grid do gráfico, mantendo só as linhas verticais, já que as horizontais não influenciavam na leitura do gráfico.
+
+## Conclusão
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed faucibus, urna quis lobortis efficitur, lectus velit imperdiet felis, rhoncus finibus elit nibh sit amet metus. Morbi consequat neque eros. Aliquam cursus eu ex elementum vulputate. Quisque id lacus odio. Duis ornare euismod nisl, in commodo metus laoreet at. Nullam imperdiet purus nulla, feugiat efficitur quam mollis et. Quisque maximus ipsum nec arcu luctus, quis ornare ante accumsan. Vivamus sollicitudin lacinia augue, ut venenatis leo pulvinar in. Sed eget diam dolor. Suspendisse potenti. Nunc nec posuere enim. Nulla auctor fermentum turpis, vulputate consequat tellus aliquam sit amet. In eros nisi, lobortis et mi placerat, varius pretium mauris. Curabitur sed justo ut quam venenatis elementum. Nunc felis nibh, fermentum in sapien in, sagittis volutpat dui. Aliquam semper dui et purus sagittis, eu auctor sapien pulvinar.
+
+Praesent euismod quis magna nec fringilla. Mauris in vehicula nibh, non bibendum nulla. Donec mi dui, ornare non nisl vitae, volutpat mollis dolor. Suspendisse purus ligula, malesuada lobortis dictum id, congue vel risus. Proin at eros risus. Nam id orci et orci imperdiet mattis. Mauris eget fermentum est, vitae finibus massa. Nam egestas fermentum sem at egestas. Nulla facilisi. Nam ultricies dapibus pulvinar. Cras tempor diam eu ultricies dapibus. Etiam at ultricies massa.
+
+Nulla interdum eleifend arcu, blandit convallis sapien fermentum vulputate. Mauris eu porttitor neque. Praesent sed nibh sed augue imperdiet pellentesque. Aliquam erat volutpat. Nulla suscipit odio vel diam fringilla, at varius tortor rutrum. Curabitur tempor efficitur nunc, et mollis sem aliquam vel. Nunc ipsum tortor, iaculis vitae congue sed, mollis nec odio. Duis hendrerit scelerisque ipsum, at ullamcorper nulla commodo porttitor. Proin ac ipsum at ante faucibus facilisis at eu nibh.
+
+
+## Agradecimentos 
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque sapien orci, tristique et diam id, dictum lobortis nibh. In venenatis leo viverra augue fermentum, eu ultricies dolor congue. Proin vel metus quis turpis dapibus dictum. Duis sed justo rutrum risus vulputate fringilla. In malesuada mi mauris, ut sagittis augue consequat ac. Suspendisse ultrices, mauris vitae facilisis tristique, tortor sem pulvinar tortor, sit amet vehicula magna dolor at turpis. Nullam magna mauris, commodo sit amet lacus quis, volutpat elementum nunc. Aenean nisl lorem, rhoncus laoreet vestibulum eget, pulvinar eget lacus. Integer non malesuada massa, vitae vestibulum leo. Pellentesque laoreet dapibus purus, ac pretium felis euismod at. Praesent dui arcu, commodo in ipsum id, vestibulum sollicitudin orci. Quisque maximus nibh vitae orci fringilla, a fermentum tellus mollis. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Praesent accumsan vulputate dictum. Nam sollicitudin enim at nisi porta sodales. Donec sit amet augue vel ante congue consectetur ac vel nibh.
+
+## Referências 
+
+[1] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque sapien orci, tristique et diam id, dictum lobortis nibh.
+
+[2] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque sapien orci, tristique et diam id, dictum lobortis nibh.
+
+[3] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque sapien orci, tristique et diam id, dictum lobortis nibh.
+
+[4] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque sapien orci, tristique et diam id, dictum lobortis nibh.
+
+[5] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque sapien orci, tristique et diam id, dictum lobortis nibh.
+
+[6] Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque sapien orci, tristique et diam id, dictum lobortis nibh.

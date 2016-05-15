@@ -1,0 +1,60 @@
+---
+title: "report_L2M3"
+date: "April 19, 2016"
+output: html_document
+---
+```{r echo=FALSE}
+library("ggplot2")
+library("dplyr")
+library("ggfortify")
+library("reshape2")
+
+
+dadosParlamentares <- read.csv("/Users/bruno/Documents/Mestrado/fpcc2/lab1/dadosParlamentares.csv")
+cotasParlamentares <- read.csv("/Users/bruno/Documents/Mestrado/fpcc2/lab1/cotasParlamentares.csv")
+```
+
+Para esta análise, o objetivo foi encontrar os deputados que ultrapassam suas cotas parlamentares. Existe um limite mensal por deputado que é definido pela Camara dos Deputados. Pude encontrar essa informação [aqui](http://www2.camara.leg.br/comunicacao/assessoria-de-imprensa/cota-parlamentar).
+
+O primeiro passo foi analisar qual o subconjunto do *data frame* que será utilizado. Após ler a [documentação](http://www2.camara.leg.br/transparencia/cota-para-exercicio-da-atividade-parlamentar/explicacoes-sobre-o-formato-dos-arquivos-xml) serão usadas as seguintes variáveis: 
+
++ **txNomeParlamentar**: Nome adotado pelo Parlamentar ao tomar posse do seu mandato.
++ **sgPartido**:  O seu conteúdo representa a sigla de um partido.
++ **sgUF**: No contexto da cota CEAP, representa a unidade da federação pela qual o deputado foi eleito e é utilizada para definir o valor da cota a que o deputado tem.
++ **txtDescricao**: O seu conteúdo é a descrição do Tipo de Despesa relativo à despesa em questão.
++ **vlrDocumento**:  O seu conteúdo é o valor de face do documento fiscal ou o valor do documento que deu causa à despesa
++ **vlrLiquido**: O seu conteúdo representa o valor líquido do documento fiscal ou do documento que deu causa à despesa e será calculado pela diferença entre o Valor do Documento e o Valor da Glosa.
++ **numMes**:  O seu conteúdo representa o Mês da competência financeira do documento fiscal ou do documento que deu causa à despesa. 
+
+Para essa análise não será usado os gastos do mês de abril, pois temos poucos gastos nesse mês. Também foi percebido que alguns gastos estão sem a informação de qual estado foi feito o gasto, é possível que seja também gastos feitos pelos partidos e não por deputados, valores negativos de gastos também serão descartados, como segue abaixo. 
+
+``` {r }
+ufGastos <- aggregate(vlrLiquido~sgPartido+sgUF+txNomeParlamentar+numMes, dadosParlamentares, "sum")  %>% arrange(desc(vlrLiquido)) %>% filter(numMes < 4 & vlrLiquido > 0 & sgUF != '-' )
+```
+
+
+
+``` {r}
+cast.df <- dcast(ufGastos, txNomeParlamentar+sgPartido~numMes, value.var = "vlrLiquido", fun.aggregate = sum)
+df <- cast.df[,3:5]
+autoplot(prcomp(df))
+  summary(prcomp(df))
+
+library("ggbiplot")
+ggbiplot(prcomp(df),
+ obs.scale = 1,
+ var.scale = 1,
+ circle = TRUE,
+ alpha = 0.5) +
+ theme(
+   axis.ticks = element_blank(),
+   axis.text.x = element_blank(),
+   axis.text.y = element_blank(),
+   legend.position="top",
+   legend.title = element_blank()) +
+ guides(color=guide_legend(
+   override.aes = list(alpha = 1)))
+
+```
+
+

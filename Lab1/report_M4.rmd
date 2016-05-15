@@ -2,7 +2,7 @@
 title: "Lab1 - Milestone 4"
 author: "Bruno Dias - contato@diasbruno.com"
 date: "27 de março de 2016"
-output: pdf_document
+output: html_document
 ---
 
 Esse relatório tem como objetivo analisar os dados do *github* dos anos de 2012-2015. Os pontos abordados serão quanto a produtividade dos usuários do *github*, além de entender como se comportaram as linguagens em termo de crescimento e declínio durante o período. 

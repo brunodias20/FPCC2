@@ -2,7 +2,7 @@
 title: "Lab1 - Milestone 2"
 author: "Bruno Dias - contato@diasbruno.com"
 date: "March 17, 2016"
-output: pdf_document
+output: html_document
 ---
 
 Uso das cotas parlamentares
