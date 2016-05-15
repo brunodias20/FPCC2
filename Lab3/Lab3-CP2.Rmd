@@ -1,8 +1,11 @@
 ---
 title: "Lab3 - Checkpoint 2"
+output: pdf_document
 date: "12 de maio de 2016"
-output: html_document
 ---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(comment = NA, warning=FALSE)
+```
 
 ```{r echo=FALSE, message = FALSE, warning=FALSE}
 
@@ -127,7 +130,7 @@ diff_genres <- bootstrap2(
 
 Abaixo podemos ver o intervalo de confiança da diferença entre as duas médias de avaliações. 
 
-```{r echo=False}
+```{r echo=FALSE}
 CI.percentile(diff_genres, probs = c(.025, .975))
 ```
 
