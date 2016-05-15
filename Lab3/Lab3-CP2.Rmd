@@ -13,8 +13,8 @@ library("dplyr")
 library("ggplot2")
 library("resample")
 
-filmes <- read.csv("/Users/brunodias/Documents/fpcc2/Lab3/dataset/movies_expanded.csv")
-ratings <- read.csv("/Users/brunodias/Documents/fpcc2/Lab3/dataset/ratings.csv")
+filmes <- read.csv("/Users/bruno/Documents/Mestrado/fpcc2/Lab3/dataset/movies_expanded.csv")
+ratings <- read.csv("/Users/bruno/Documents/Mestrado/fpcc2/Lab3/dataset/ratings.csv")
 filmes.me <- merge(filmes, ratings, by = "movieId", all.x= TRUE) %>%
   na.omit(result)
 
