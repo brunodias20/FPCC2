@@ -1,6 +1,5 @@
 ---
 title: "Lab3 - Checkpoint 2"
-author: "Bruno Dias - contato@diasbruno.com"
 date: "12 de maio de 2016"
 output: html_document
 ---
@@ -10,7 +9,6 @@ output: html_document
 library("dplyr")
 library("ggplot2")
 library("resample")
-
 
 filmes <- read.csv("/Users/brunodias/Documents/fpcc2/Lab3/dataset/movies_expanded.csv")
 ratings <- read.csv("/Users/brunodias/Documents/fpcc2/Lab3/dataset/ratings.csv")
@@ -23,10 +21,19 @@ filmes.df <- filmes.me %>% select(movieId, title, numGenres, rating)
 
 ## Análise exploratória
 
+Os dados que iremos explorar fazem parte de um *dataframe* com um conjunto de filmes, seus generos e suas avaliações de qualidade. Abaixo temos o resumo da estrutura dos nossos dados. 
+
+* **moviesId**: identificador único do filme
+* **title**: Titulo do filme 
+* **numGenres**: Quantidade total de gêneros do filme.
+* **gêneros (vários)**: os genêros que o filme tem, quando for 0 o gênero não está contido no filme, quando for 1 o mesmo está contido. 
+* **rating**: nota de avaliação do filme. 
+
 O *dataset* tem uma quantidade de avaliações por filme muito baixa como podemos ver no gráfico abaixo:
 
 ```{r echo = FALSE}
 count_ratings <- filmes.df %>% group_by(movieId ,title) %>% summarise(qtd_rating = length(rating))
+
 ggplot(count_ratings, aes(title, qtd_rating)) + 
   geom_jitter() +
   xlab("Filmes") +
@@ -64,7 +71,7 @@ ggplot(count_ratings.s, aes(title, qtd_rating)) +
        axis.ticks=element_blank())
 ```
 
-Abaixo é possível ver a média de avaliação por quantidade de generos dos filmes. Percebemos algo estranho que é o resultado inteiro nos filmes com oito generos, ao verificar o *dataset*, percebe-se que só há um filme com 8 generos e esse teve apenas uma avaliação. Também há poucas avaliações para filmes com 6 e 7 generos. Logo, foram descartados os filmes com 6 generos ou mais por não terem pelo menos 300 avaliações. 
+Abaixo é possível ver a média de avaliação por quantidade de gêneros dos filmes. Percebemos algo estranho que é o resultado inteiro nos filmes com oito gêneros, ao verificar o *dataset*, percebe-se que só há um filme com 8 gêneros e esse teve apenas uma avaliação. Também há poucas avaliações para filmes com 6 e 7 gêneros. Logo, foram descartados os filmes com 6 gêneros ou mais por não terem pelo menos 300 avaliações. 
 
 ```{r echo = FALSE}
 filmes.result %>% group_by(numGenres) %>% summarise(mean(rating), length(rating))
@@ -72,40 +79,74 @@ filmes.result <- filmes.result %>% filter(numGenres < 6)
 ```
 
 
-## Relação (Primeira pergunta)
+## Relação entre quantidade de gêneros e avaliações médias 
 
-Normalmente os filmes têm vários gêneros. Existe uma relação em quantos gêneros os filmes se encaixam e a avaliação média que os filmes recebem? Mais especificamente: se consideramos a média dos filmes com 1, 2, 3 ... gêneros, existe alguma quantidade de gêneros num mesmo filme que em média recebe avaliações melhores? Caso exista, estime a diferença nas médias entre essa combinação e filmes com apenas um gênero.
+*Normalmente os filmes têm vários gêneros. Existe uma relação em quantos gêneros os filmes se encaixam e a avaliação média que os filmes recebem? Mais especificamente: se consideramos a média dos filmes com 1, 2, 3 ... gêneros, existe alguma quantidade de gêneros num mesmo filme que em média recebe avaliações melhores? Caso exista, estime a diferença nas médias entre essa combinação e filmes com apenas um gênero.*
 
+Como definido anteriormente, iremos utilizar para essa análise somente filmes que tem até cinco gêneros. No gráfico abaixo podemos perceber que filmes com 5 gêneros recebe em média uma avaliações melhores que os demais. 
 
+```{r echo=FALSE}
 
-
-```{r}
-filmes.result %>% group_by(title.x, numGenres) %>%  summarise(length(rating)) %>% count(numGenres)
-
-
-filmes.result %>% ggplot(aes(numGenres)) + geom_histogram(binwidth = 0.5)
 resampleGenres = function(n) {
   x <- filmes.result %>% filter(numGenres == n)
   b = bootstrap(x$rating, mean, R = 1000)
+  CI.percentile(b, probs = c(.025, .975))
 }
 
-for (n in 1:5) { 
-  print(CI.percentile(resampleGenres(n), probs = c(.025, .975)))
+genrer_plot <- data.frame(upper = c(), mean = c(), lower = c())
+for (n in 1:5) {
+  a <- resampleGenres(n)
+  genrer_plot <- rbind(genrer_plot, data.frame(
+    mean = mean(a),
+    lower = a[1],
+    upper = a[2]
+  ))
 }
+
+genrer_plot %>% ggplot(aes(x = 1:nrow(genrer_plot), y = mean)) +
+  geom_point(size = 2, color = "cyan3") + 
+  geom_errorbar(aes(
+    ymin = lower, 
+    ymax = upper), width=.3, size=1, color = "cyan3") +
+  xlab("Qtd de gêneros") +
+  ylab("Variância das avaliações") +
+  theme_bw() +
+  theme(axis.ticks=element_blank())
 ```
 
+Tendo em vista que existe uma quantidade de gêneros que em média recebe notas maiores, agora iremos calcular a diferença nas médias entre os filmes com **um** gênero e com **cinco** gêneros. Para isso, iremos aplicar a técnica *bootstrap* de comparação entre duas estatísticas. 
 
-# Segunda Questões
+```{r warning=FALSE}
+filmes_5genres <- filmes.result %>% filter(numGenres == 5) %>% select(rating)
+filmes_1genres <- filmes.result %>% filter(numGenres == 1) %>% select(rating)
+diff_genres <- bootstrap2(
+  data=filmes_5genres$rating,
+  data2=filmes_1genres$rating,
+  statistic = mean)
+```
 
+Abaixo podemos ver o intervalo de confiança da diferença entre as duas médias de avaliações. 
 
-```{r} 
+```{r echo=False}
+CI.percentile(diff_genres, probs = c(.025, .975))
+```
+
+# Quais os genêros que tem maior variação nas notas
+
+*Entre os 10 gêneros que têm mais filmes, quais possuem maior variação nas notas atribuídas a seus filmes?*
+
+Como podemos ver abaixo, temos a lista de gêneros mais analisados. Os 10 primeiros são Drama, Action, Comedy, Thriller, Adventure, Romance, Crime, SciFi, Fantasy, Mystery. 
+
+```{r echo=FALSE} 
 qtd=colSums(filmes.me[4:22])
-sort(qtd)
+sort(qtd, decreasing = TRUE)
+```
 
-filmes.var <- filmes.me %>% select(movieId, title, Action, Drama, Comedy, Thriller, Adventure, Romance, SciFi, Crime, Fantasy, Mystery, rating) 
+```{r echo=FALSE} 
+filmes.var <- filmes.me %>% select(movieId, title, Drama, Action, Comedy, Thriller, Adventure, Romance, Crime, SciFi, Fantasy, Mystery, rating) 
 
 resampleVar = function(n) {
-  x <- filmes.var %>% filter(filmes.var[[]] == 1)
+  x <- filmes.var %>% filter(filmes.var[[n]] == 1)
   b = bootstrap(x$rating, var)
   CI.percentile(b, probs = c(.025, .975))
 }
@@ -114,14 +155,17 @@ resampleVar = function(n) {
 boot_plot <- data.frame(genero = c(), upper = c(), mean = c(), lower = c())
 for (n in 3:12) {
   a <- resampleVar(n)
-  str(a)
   boot_plot <- rbind(boot_plot, data.frame( genero = names(filmes.var[n]),
     mean = mean(a),
     lower = a[1],
     upper = a[2]
   ))
 }
+```
 
+Logo, iremos utilizar a técnica de *resample* para encontrar os intervalos de confiança e plotar o resultado em um gráfico do tipo error bar. Por fim, podemos ver que os filmes que tem maior variância nas avaliações são os que tem o gênero Drama. É interessante confirmar isso, já que filmes de drama tem diversas categorias e se relaciona com vários outros gêneros, assim é natural que esse tipo de gênero tenha uma variância maior nas avaliações. 
+
+``` {r echo=FALSE} 
 # Plotando a visualização dos 10 generos com maior variância de avaliações. 
 boot_plot <- arrange(boot_plot, desc(mean))
 boot_plot %>% ggplot(aes(x = 1:nrow(boot_plot), y = mean)) +
@@ -129,15 +173,13 @@ boot_plot %>% ggplot(aes(x = 1:nrow(boot_plot), y = mean)) +
   geom_errorbar(aes(
     ymin = lower, 
     ymax = upper), width=.3, size=1, color = "cyan3") +
- #geom_hline(aes(yintercept=mean(mean(medianRating)), color="coral", linetype="dashed"))
   xlab("Gêneros") +
   ylab("Variância das Avaliações") +
-  scale_x_discrete(limits = c("SciFi", "Comedy", 
-                              "Fantasy", "Action",
-                              "Adventure", "Thriller", 
-                              "Romance", "Crime", 
-                              "Mystery", "Drama")) + 
+  scale_x_discrete(limits = c("Drama", "Action", 
+                              "Comedy", "Thriller",
+                              "Adventure", "Romance", 
+                              "Crime",  "SciFi",
+                              "Fantasy", "Mistery")) + 
   theme_bw() +
   theme(axis.ticks=element_blank())
-
 ```
