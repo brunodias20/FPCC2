@@ -1,0 +1,23 @@
+---
+title: "Lab4 - CP3"
+date: "4 de junho de 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+3. Descreva qual teste de hipótese você usará para responder as perguntas escolhidas no CP 2 e porque. As premissas (assumptions) do teste são satisfeitas?
+
+
+
+4. Responda as duas perguntas utilizando testes de hipótese. 
+
+    a. Reporte os resultados de acordo com o que você viu de melhor no Prob 4 CP 1
+
+    b. Compare os resultados com sua expectativa descrita no CP 2
+
+    c. Comente sobre as vantagens e desvantagens que você vê no resultado ao qual chegou no Prob 3 e       Prob 4 para as mesmas perguntas.
+
+
