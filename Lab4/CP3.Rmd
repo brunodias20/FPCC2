@@ -1,23 +1,121 @@
 ---
 title: "Lab4 - CP3"
-date: "4 de junho de 2016"
 output: html_document
+date: "4 de junho de 2016"
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, include=FALSE, }
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, comment = NA, error = FALSE)
 ```
 
-3. Descreva qual teste de hipótese você usará para responder as perguntas escolhidas no CP 2 e porque. As premissas (assumptions) do teste são satisfeitas?
+## Métodos de teste de hipótese 
+
+  Serão utilizados para responder as duas perguntas o teste de permutação e *bootstrap*. Tais métodos são não-paramétrico e não impõem suposições sobre a distribuição dos dados. Como têm-se duas populações em ambas as perguntas, esse método se encaixa perfeitamente nesse cenário. 
+
+```{r echo = FALSE,  warning = FALSE}
+library("dplyr")
+library("ggplot2")
+library("resample")
+movies <- read.csv("/Users/brunodias/Documents/FPCC2/Lab3/dataset/movies_expanded.csv")
+ratings <- read.csv("/Users/brunodias/Documents/FPCC2/Lab3/dataset/ratings_summ.csv")
+```
+
+## Hipóteses a serem testadas  
+
+### Diferença na variação de quantidade de ratings
+
+Primeira pergunta que iremos responder é se **existe diferença na variação de quantidade de ratings dos filmes lançados entre 1985-2000 e dos lançados entre 2001-2015**. 
+
+Primeiro é preciso definir a hipótese nula e alternativa para que seja possível detalhar melhor o problema e assim realizar os testes. Logo temos que:
+
+* $H_{0}$: Não há diferença na variação da quantidade de ratings dos filmes lançados entre 1985-2000 e entre 2001-2015.
+
+* $H_{1}$: Há diferença na variação da quantidade de ratings dos filmes lançados entre 1985-2000 e entre 2001-2015.
+
+Pelo estudo prévio feito que revelou os intervalos de confiança existentes desses dados analisados, foi possível supor que o *p-value* que será encontrado é de 0.05. Para chegar a essa conclusão foi utilizado um artigo que faz comparações entre CI e NHST. Abaixo temos a análise realizada. 
+
+``` {r warning}
+diferenca <- full_join(movies, ratings) 
+diferenca <- diferenca %>% select(year, qtdRatings) %>% filter(year >= 1985 & year <= 2015)
+
+# Adicionando uma coluna group para definirmos os dois grupos que queremos analisar, 0 representa os filmes entre 85 e 99 e 1 representa os filmes entre 00 e 15 
+diferenca$group[diferenca$year < 2000] <- 0
+diferenca$group[diferenca$year >= 2000] <- 1
+diferenca <- diferenca %>% select(qtdRatings, group) 
+
+# Executando teste de permutação da biblioteca resample
+pt <- permutationTest2(diferenca, var(qtdRatings), treatment = group)
+
+variacao99 = diferenca %>% filter( group == 0)
+variacao15 = diferenca %>% filter( group == 1) 
+options("scipen" = 100, "digits" = 4)
+```
+
+| Variação 85-99 | Variação 00-15 | p-valor   |
+| :------------: | :----------------: | :------------:  |
+| `r var(variacao99$qtdRatings)` |`r var(variacao15$qtdRatings)`        |   `r pt$stats$PValue` |
+
+Na tabela acima temos: 
+* Variação da quantidade de ratings dos filmes entre os anos de 85 e 99;
+* Variação da quantidade de ratings dos filmes entre os anos de 00 e 15;
+* Significância estatística *p* da diferença entre as variações da quantidade de ratings dos dois grupos. Para realizar o cálculo de *p* foi utilizado o método **teste de permutação**, pela robustez que esse método traz e por ser não-paramétrico. 
+
+Como é visto nos dados da tabela, temos um *p-value* com um valor muito baixo. Dado esse valor de *p* é possível rejeitar  $H_{0}$ com a segurança de um *p-value* < 0.05, como suposto inicialmente. Assim pode-se concluir que existe diferença na variação da quantidade de ratings nos filmes dos dois grupos analisados. 
+
+### Diferença de ratings entre dois generos
+
+A segunda pergunta será respondida é se existe diferença na média de ratings entre filmes de terror e filmes de comédia.
+
+Nesse caso, teremos as seguintes hipóteses dessa questão de pesquisa:
+
+* $H_{0}$: Não há diferença na média de ratings entre os filmes de terror e comédia
+
+* $H_{1}$: Há diferença na média de ratings entre os filmes de terror e comédia
+
+Usando intervalos de confiança essa questão foi respondida provando que existe diferença sim entre a média de ratings dessas duas categorias. Logo foi possível inferir que o p-valor será menor que 0.01. Dando uma significância estatística bastante robusta para provar que existe diferença de ratings entre essas categorias. 
+
+Para realizar análise foi retirado do conjunto de dados filmes que tinham as duas categorias presentes, para evitar ruídos nos resultados.Abaixo temos a análise realizada utilizando como método teste de permutação. 
+
+``` {r}
+movies1 <- read.csv("/Users/brunodias/Documents/FPCC2/Lab3/dataset/movies_expanded.csv")
+ratings1 <- read.csv("/Users/brunodias/Documents/FPCC2/Lab3/dataset/ratings.csv")
+
+media_diff <- full_join(movies1, ratings1) %>% na.omit
+
+# Organizando os dados para retirar filmes que as duas categorias estão presentes
+media_diff <- media_diff %>% select(Horror, Comedy, rating) %>% filter(Horror == 0 & Comedy == 1 | Horror == 1 & Comedy == 0)
+
+# Criando uma coluna dos grupos 
+media_diff$group[media_diff$Horror == 1] <- "Horror"
+media_diff$group[media_diff$Comedy == 1] <- "Comedy"
+media_diff <- media_diff %>% select(group, rating)
+
+# Executando teste de permutação da biblioteca resample
+result <- permutationTest2(media_diff, var(rating), treatment = group)
+
+media_horror <- media_diff %>% filter(group == "Horror")
+media_comedia <- media_diff %>% filter(group == "Comedy") 
+options("scipen" = 100, "digits" = 4)
+```
+
+| Média horror | Média Comédia | p-valor   |
+| :------------: | :----------------: | :------------:  |
+| `r mean(media_horror$rating)` |`r mean(media_comedia$rating)`        |   `r result$stats$PValue` |
+
+Na tabela acima temos: 
+* A média de rating dos filmes de horror; 
+* A média de rating dos filmes de terror; 
+* Significância estatística *p* da diferença entre as médias de ratings dos filmes de horror e comédia. Para realizar o cálculo de *p* foi utilizado o método **teste de permutação**, pela robustez que esse método traz e por ser não-paramétrico. 
+
+Como é visto nos dados da tabela, temos um *p-value* com um valor muito baixo. Dado esse valor de *p* é possível rejeitar  $H_{0}$ com a segurança de um *p-value* < 0.01, como suposto inicialmente. Assim pode-se concluir que existe diferença na média de ratings nos filmes de horror e comédia. 
+
+Logo, os dados nos sugerem que as pessoas tendem a gostar mais de filmes de comédia do que de filmes de horror. Também podemos pensar que é mais simples fazer um filme de comédia de boa qualidade do que um filme de horror por isso esses tipos de filme tem avaliações melhores. 
+
+Por fim, para termos mais robustez nos dados seria interessante aumentar a amostra de ratings dos filmes de horror, tendo em vista que as observações de ratings de comédia são cerca de 84% do nosso *dataframe*. 
 
 
+## Comparação entre CI e NHST
 
-4. Responda as duas perguntas utilizando testes de hipótese. 
+É interessante notar que as análises com testes de hipótese mostra que o uso de CI para responder perguntas através dos dados parece ser tão robusto quanto o uso destes testes de hipótese, já que as duas questões respondidas questão também foram respondidas com um CI de 95%. 
 
-    a. Reporte os resultados de acordo com o que você viu de melhor no Prob 4 CP 1
-
-    b. Compare os resultados com sua expectativa descrita no CP 2
-
-    c. Comente sobre as vantagens e desvantagens que você vê no resultado ao qual chegou no Prob 3 e       Prob 4 para as mesmas perguntas.
-
-
+Por outro lado, vale apontar também que uma análise de muitos grupos feitas através de intervalo de confiança pode não ser tão simples de ser entendida através das visualizações, por mais que essas visualizações sejam boas. A forma de NHST parece mais interessante nessas situações, onde poderemos chegar a um valor que ajudará a provar a rejeição ou não da hipótese nula. 
