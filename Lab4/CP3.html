@@ -128,7 +128,7 @@ $(document).ready(function () {
 <li><p><span class="math inline">\(H_{1}\)</span>: Há diferença na variação da quantidade de ratings dos filmes lançados entre 1985-2000 e entre 2001-2015.</p></li>
 </ul>
 <p>Pelo estudo prévio feito que revelou os intervalos de confiança existentes desses dados analisados, foi possível supor que o <em>p-value</em> que será encontrado é de 0.05. Para chegar a essa conclusão foi utilizado um artigo que faz comparações entre CI e NHST. Abaixo temos a análise realizada.</p>
-<pre class="r"><code>diferenca &lt;- full_join(movies, ratings) 
+<pre class="r"><code>diferenca &lt;- full_join(movies, ratings_summ) 
 diferenca &lt;- diferenca %&gt;% select(year, qtdRatings) %&gt;% filter(year &gt;= 1985 &amp; year &lt;= 2015)
 
 # Adicionando uma coluna group para definirmos os dois grupos que queremos analisar, 0 representa os filmes entre 85 e 99 e 1 representa os filmes entre 00 e 15 
@@ -171,10 +171,7 @@ options(&quot;scipen&quot; = 100, &quot;digits&quot; = 4)</code></pre>
 </ul>
 <p>Usando intervalos de confiança essa questão foi respondida provando que existe diferença sim entre a média de ratings dessas duas categorias. Logo foi possível inferir que o p-valor será menor que 0.01. Dando uma significância estatística bastante robusta para provar que existe diferença de ratings entre essas categorias.</p>
 <p>Para realizar análise foi retirado do conjunto de dados filmes que tinham as duas categorias presentes, para evitar ruídos nos resultados.Abaixo temos a análise realizada utilizando como método teste de permutação.</p>
-<pre class="r"><code>movies1 &lt;- read.csv(&quot;/Users/brunodias/Documents/FPCC2/Lab3/dataset/movies_expanded.csv&quot;)
-ratings1 &lt;- read.csv(&quot;/Users/brunodias/Documents/FPCC2/Lab3/dataset/ratings.csv&quot;)
-
-media_diff &lt;- full_join(movies1, ratings1) %&gt;% na.omit
+<pre class="r"><code>media_diff &lt;- full_join(movies, ratings) %&gt;% na.omit
 
 # Organizando os dados para retirar filmes que as duas categorias estão presentes
 media_diff &lt;- media_diff %&gt;% select(Horror, Comedy, rating) %&gt;% filter(Horror == 0 &amp; Comedy == 1 | Horror == 1 &amp; Comedy == 0)

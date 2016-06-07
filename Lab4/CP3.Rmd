@@ -17,7 +17,8 @@ library("dplyr")
 library("ggplot2")
 library("resample")
 movies <- read.csv("/Users/brunodias/Documents/FPCC2/Lab3/dataset/movies_expanded.csv")
-ratings <- read.csv("/Users/brunodias/Documents/FPCC2/Lab3/dataset/ratings_summ.csv")
+ratings_summ <- read.csv("/Users/brunodias/Documents/FPCC2/Lab3/dataset/ratings_summ.csv")
+ratings <- read.csv("/Users/brunodias/Documents/FPCC2/Lab3/dataset/ratings.csv")
 ```
 
 ## Hipóteses a serem testadas  
@@ -35,7 +36,7 @@ Primeiro é preciso definir a hipótese nula e alternativa para que seja possív
 Pelo estudo prévio feito que revelou os intervalos de confiança existentes desses dados analisados, foi possível supor que o *p-value* que será encontrado é de 0.05. Para chegar a essa conclusão foi utilizado um artigo que faz comparações entre CI e NHST. Abaixo temos a análise realizada. 
 
 ``` {r warning}
-diferenca <- full_join(movies, ratings) 
+diferenca <- full_join(movies, ratings_summ) 
 diferenca <- diferenca %>% select(year, qtdRatings) %>% filter(year >= 1985 & year <= 2015)
 
 # Adicionando uma coluna group para definirmos os dois grupos que queremos analisar, 0 representa os filmes entre 85 e 99 e 1 representa os filmes entre 00 e 15 
@@ -77,10 +78,8 @@ Usando intervalos de confiança essa questão foi respondida provando que existe
 Para realizar análise foi retirado do conjunto de dados filmes que tinham as duas categorias presentes, para evitar ruídos nos resultados.Abaixo temos a análise realizada utilizando como método teste de permutação. 
 
 ``` {r}
-movies1 <- read.csv("/Users/brunodias/Documents/FPCC2/Lab3/dataset/movies_expanded.csv")
-ratings1 <- read.csv("/Users/brunodias/Documents/FPCC2/Lab3/dataset/ratings.csv")
 
-media_diff <- full_join(movies1, ratings1) %>% na.omit
+media_diff <- full_join(movies, ratings) %>% na.omit
 
 # Organizando os dados para retirar filmes que as duas categorias estão presentes
 media_diff <- media_diff %>% select(Horror, Comedy, rating) %>% filter(Horror == 0 & Comedy == 1 | Horror == 1 & Comedy == 0)
