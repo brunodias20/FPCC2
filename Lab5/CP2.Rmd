@@ -1,0 +1,81 @@
+---
+title: "Prob 5 CP 2"
+date: "15 de junho de 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE, }
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, comment = NA, error = FALSE)
+```
+De posse desses dados, queremos avaliar se a beleza possui um efeito significativo no score dos professores, levando em conta os demais fatores que foram identificados como tento possíveis efeitos, que são as variáveis rank, ethnicity, gender, language, age, cls_*, pic_outfit e pic_color. Para isso faça o seguinte:
+
+1. Comece a análise como se começa toda análise: faça um descritivo 
+
+2. Utilize regressão linear simples para avaliar a relação entre beleza e score quando consideramos apenas essa variável. Comente a significância estatística e a significânca prática da relação que você está investigando. Os pressupostos da regressão foram atendidos? Alguma medida a ser tomada nesse ponto?
+
+3. Queremos agora avaliar se o efeito da beleza é significativo quando levamos em conta outras variáveis que podem explicar a variação de avaliações que observamos. Antes de fazer o modelo, pense sobre cada uma delas e anote quais você espera que tenham um efeito significativo e quais teriam efeito positivo ou negativo. Em seguida, construa seu modelo e avalie os resultados encontrados. Comente os efeitos dos preditores, o fit do modelo e que implicações você acha que ele tem. Nos diga qual sua conclusão sobre o efeito da beleza na avaliação da docência dos professores.
+```{r echo = FALSE,  warning = FALSE}
+library("dplyr")
+library("ggplot2")
+library("broom")
+library("GGally")
+library("ggfortify")
+
+eval <- read.csv("~/Documents/FPCC2/Lab5/evals.csv")
+```
+
+## Análise de dados 
+
+A partir do conjunto de dados fornecido, serão analisadas as seguintes variáveis para responder as perguntas: 
+
+score
+cls_level
+bty_avg
+age
+
+``` {r} 
+eval %>% count(cls_level)
+
+```
+
+
+## Relação entre Beleza e Score
+
+``` {r}
+
+eval_simples <- eval %>% select(score, bty_avg)
+
+ggpairs(eval_simples)
+
+modelEval <- lm(score ~ bty_avg, data = eval_simples)
+
+confint(modelEval)
+
+tidy(modelEval, conf.int = TRUE)
+glance(modelEval)
+
+ggplot(eval_simples, aes(x = bty_avg, y = score)) + 
+  geom_point(alpha = 0.4) + 
+  geom_line(aes(y = predict(modelEval, eval_simples))) + 
+  stat_smooth(method = "lm")
+
+ggplot(modelEval, aes(bty_avg, .resid)) + 
+  geom_point(alpha = .4) + 
+  geom_hline(yintercept = 0, colour = "blue") + 
+  stat_smooth(method = "lm")
+
+autoplot(modelEval, label.size = 3, alpha = 0.4)
+
+```
+
+## Influência de outras variáveis
+
+Agora será analisado a influência de outras variáveis no efeito que a beleza exerce sob o score.
+
+``` {r}
+bty_df <- eval %>% select(score, age, cls_level) 
+
+bty_df$bty_lower <- (eval$bty_f1lower + eval$bty_m1lower)/2
+bty_df$bty_upper <- (eval$bty_f1upper + eval$bty_f2upper + eval$bty_m1upper + eval$bty_m2upper)/4
+
+```
