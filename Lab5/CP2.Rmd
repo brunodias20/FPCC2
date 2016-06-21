@@ -21,20 +21,25 @@ library("broom")
 library("GGally")
 library("ggfortify")
 
-eval <- read.csv("~/Documents/FPCC2/Lab5/evals.csv")
+eval <- read.csv("~/Documents/Mestrado/FPCC2/Lab5/evals.csv")
 ```
 
 ## Análise de dados 
 
 A partir do conjunto de dados fornecido, serão analisadas as seguintes variáveis para responder as perguntas: 
 
-score
-cls_level
-bty_avg
-age
+* **score**: Pontuação média na avaliação docente
+
+* **bty_avg**: Média de beleza dos professores
+
+* **gender**: Sexo dos professores 
+
+* **ethnicity**: Etnia dos professores
+
 
 ``` {r} 
-eval %>% count(cls_level)
+eval_df <- eval %>% select(score, bty_avg, gender, ethnicity) 
+summary (eval_df)
 
 ```
 
@@ -45,14 +50,12 @@ eval %>% count(cls_level)
 
 eval_simples <- eval %>% select(score, bty_avg)
 
-ggpairs(eval_simples)
-
 modelEval <- lm(score ~ bty_avg, data = eval_simples)
-
-confint(modelEval)
 
 tidy(modelEval, conf.int = TRUE)
 glance(modelEval)
+
+summary(modelEval)
 
 ggplot(eval_simples, aes(x = bty_avg, y = score)) + 
   geom_point(alpha = 0.4) + 
@@ -73,9 +76,13 @@ autoplot(modelEval, label.size = 3, alpha = 0.4)
 Agora será analisado a influência de outras variáveis no efeito que a beleza exerce sob o score.
 
 ``` {r}
-bty_df <- eval %>% select(score, age, cls_level) 
+bty_df <- eval %>% select(score, gender, ethnicity, bty_avg)
 
-bty_df$bty_lower <- (eval$bty_f1lower + eval$bty_m1lower)/2
-bty_df$bty_upper <- (eval$bty_f1upper + eval$bty_f2upper + eval$bty_m1upper + eval$bty_m2upper)/4
+ggpairs(bty_df)
+
+model_bty <- lm(score ~ bty_avg + gender, data = bty_df)
+
+tidy(model_bty, conf.int = TRUE)
+glance(model_bty)
 
 ```
