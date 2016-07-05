@@ -1,19 +1,20 @@
 ---
 title: "Prob 5 CP 2"
-date: "15 de junho de 2016"
 output: html_document
+date: "15 de junho de 2016"
 ---
 
 ```{r setup, include=FALSE, }
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, comment = NA, error = FALSE)
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE, warning = FALSE, message = FALSE, comment = NA, error = FALSE)
 ```
+
+# Análise do efeito da beleza na pontuação média da didática dos professores 
+
 De posse desses dados, queremos avaliar se a beleza possui um efeito significativo no score dos professores, levando em conta os demais fatores que foram identificados como tento possíveis efeitos, que são as variáveis rank, ethnicity, gender, language, age, cls_*, pic_outfit e pic_color. Para isso faça o seguinte:
 
 1. Comece a análise como se começa toda análise: faça um descritivo 
 
-2. Utilize regressão linear simples para avaliar a relação entre beleza e score quando consideramos apenas essa variável. Comente a significância estatística e a significânca prática da relação que você está investigando. Os pressupostos da regressão foram atendidos? Alguma medida a ser tomada nesse ponto?
 
-3. Queremos agora avaliar se o efeito da beleza é significativo quando levamos em conta outras variáveis que podem explicar a variação de avaliações que observamos. Antes de fazer o modelo, pense sobre cada uma delas e anote quais você espera que tenham um efeito significativo e quais teriam efeito positivo ou negativo. Em seguida, construa seu modelo e avalie os resultados encontrados. Comente os efeitos dos preditores, o fit do modelo e que implicações você acha que ele tem. Nos diga qual sua conclusão sobre o efeito da beleza na avaliação da docência dos professores.
 ```{r echo = FALSE,  warning = FALSE}
 library("dplyr")
 library("ggplot2")
@@ -21,10 +22,10 @@ library("broom")
 library("GGally")
 library("ggfortify")
 
-eval <- read.csv("~/Documents/Mestrado/FPCC2/Lab5/evals.csv")
+eval <- read.csv("~/Documents/FPCC2/Lab5/evals.csv")
 ```
 
-## Análise de dados 
+## Análise dos dados 
 
 A partir do conjunto de dados fornecido, serão analisadas as seguintes variáveis para responder as perguntas: 
 
@@ -36,53 +37,107 @@ A partir do conjunto de dados fornecido, serão analisadas as seguintes variáve
 
 * **ethnicity**: Etnia dos professores
 
+Foram escolhidos duas variáveis além das solicitadas que podem influenciar em conjunto com a beleza na pontuação dos professores. 
+
+Nossa hipótese é que o sexo e etnia dos professores influenciam no efeito que a beleza tem sob a pontuação. Mas antes ver algumas informações sobre os dados. 
 
 ``` {r} 
 eval_df <- eval %>% select(score, bty_avg, gender, ethnicity) 
 summary (eval_df)
-
 ```
 
+Podemos perceber que existem mais professores do sexo masculino na nossa amostra, além de termos poucos professores que representam a minoria etnica, o que já era esperado. Vamos analisar com mais detalhes as variáveis score e beleza média. 
+
+Abaixo temos dois gráficos onde podemos visualizar a distribuição das variáveis pontuação e beleza. É bem evidente a diferença entre como os professores são avaliados pelas suas capacidades e como são avaliados pela sua beleza.
+
+``` {r}
+gridExtra::grid.arrange(
+  ggplot(eval_df, aes(x=score)) + 
+  geom_histogram(binwidth = 0.2) + 
+  xlab("Pontuação") + 
+  ylab("Frequência"),
+ggplot(eval_df, aes(x=bty_avg)) + 
+  geom_histogram(binwidth = 0.2) + 
+  xlab("Beleza") + 
+  ylab("Frequência"),
+ncol = 2
+)
+```
+
+Logo, isso indica que há pouca chance de se ter um efeito forte da beleza sob a pontuação dos professores. A seguir iremos aplicar regressão linear para entender melhor essa relação. 
 
 ## Relação entre Beleza e Score
 
+Para explicar o efeito que a beleza exerce sobre o score, definimos o seguinte modelo: 
+
+$$\hat{score}=B_0+B_1 \cdot bty\_avg $$ 
+
+Abaixo podemos ver o efeito que a beleza exerce sob a pontuação do professor. 
+
 ``` {r}
-
 eval_simples <- eval %>% select(score, bty_avg)
-
 modelEval <- lm(score ~ bty_avg, data = eval_simples)
 
-tidy(modelEval, conf.int = TRUE)
-glance(modelEval)
-
+confint(modelEval)
 summary(modelEval)
+```
 
+Como podemos ver acima, temos o *R-squared* com cerca de 3%, o que explica muito pouco sobre o efeito da beleza na pontuação dos professores. Abaixo é possível perceber que os pressupostos da regressão linear foram atendidos. Temos poucos *outliers* e os residuos se comportam como esperado. 
+
+``` {r} 
+autoplot(modelEval)
+```
+
+Por fim, a visualização abaixo deixa bem mais claro que, para a amostra observada, não há correlação entre a beleza e o score. 
+
+``` {r}
 ggplot(eval_simples, aes(x = bty_avg, y = score)) + 
   geom_point(alpha = 0.4) + 
   geom_line(aes(y = predict(modelEval, eval_simples))) + 
-  stat_smooth(method = "lm")
-
-ggplot(modelEval, aes(bty_avg, .resid)) + 
-  geom_point(alpha = .4) + 
-  geom_hline(yintercept = 0, colour = "blue") + 
-  stat_smooth(method = "lm")
-
-autoplot(modelEval, label.size = 3, alpha = 0.4)
-
+  stat_smooth(method = "lm") + 
+  xlab("Beleza") + 
+  ylab("Pontuação")
 ```
 
 ## Influência de outras variáveis
 
-Agora será analisado a influência de outras variáveis no efeito que a beleza exerce sob o score.
+Agora será analisado a influência das variáveis etnia e genero no efeito que a beleza exerce sob o score. 
+
+Nosso modelo provavelmente irá aplicar o sexo masculino na variável de genero como visto em sala de aula. Acredito que essa variável terá uma influência positiva sobre os efeitos da beleza, bem como a variável de etnia também terá efeito positivo sobre o modelo. Esse modelo é definido por: 
+
+$$\hat{score}=B_0+B_1 \cdot bty\_avg+B_2 \cdot gender +B_3 \cdot ethnicity $$ 
+
 
 ``` {r}
 bty_df <- eval %>% select(score, gender, ethnicity, bty_avg)
 
-ggpairs(bty_df)
-
-model_bty <- lm(score ~ bty_avg + gender, data = bty_df)
-
-tidy(model_bty, conf.int = TRUE)
-glance(model_bty)
+model_bty <- lm(score ~ bty_avg + gender + ethnicity, data = bty_df)
+autoplot(model_bty)
 
 ```
+
+Os pressupostos necessários para satisfazer a regressão linear parecem estar dentro do esperado. Poucos *outliers* e os residuos tem uma distribuição semelhante a normal. 
+
+Agora vamos verificar os efeitos das variáveis no modelo. A partir do sumário desse modelo, é possível afirmar que houve uma melhora no efeito das variáveis adicionadas em relação a pontuação. Temos o *R-squared* com cerca de 6% e também houve um acréscimo no efeito da beleza sobre o score.
+
+```{r}
+summary(model_bty)
+```
+
+Porém, percebemos que o intervalo de confiança da variável *ethnicity* passa pelo zero, isso quer dizer que essa variável não exerce nenhum efeito em nosso modelo. Portanto, ela será descartada. 
+
+```{r}
+confint(model_bty)
+```
+
+Dessa forma, temos o seguinte modelo ajustado: 
+$$\hat{score}=B_0+B_1 \cdot bty\_avg+B_2 \cdot gender $$ 
+
+```{r}
+model_bty <- lm(score ~ bty_avg + gender, data = bty_df)
+summary(model_bty)
+```
+
+### Conclusões
+
+Por fim, continuamos com pouco efeito das variáveis utilizadas em relação ao score. Esta análise de dados nos da um forte indicativo que não há relação entre a beleza e o score que os professores atingem em suas avaliações docentes. Isso parece fazer sentido, já que tem outras características mais interessantes que podem ter relação com a pontuação do professor, algumas delas seriam: empatia, domínio do conteúdo, assiduidade, pontualidade, metodologia de avaliação, entre outras. Essas seriam boas métricas que podem mostrar fortes relacionamentos com o score do professor. 
